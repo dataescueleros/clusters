@@ -1,0 +1,63 @@
+# clusters
+ibrary(MASS)
+data<-Boston
+
+plot(data$crim,data$black)
+plot(data$crim,data$medv)
+plot(data$indus,data$nox)
+
+# Mirar comando truhist para hacer histograma
+
+distancias<-dist(data)
+hist(distancias)
+datosN<-as.data.frame(scale(data,scale=T,center=F))
+distanciasN<-dist(datosN)
+hist(distanciasN)
+casasclust<-hclust(distancias)
+casasclustN<-hclust(distanciasN)
+plot(casasclust)
+
+gruposcasas<-cutree(casasclust,k=4)
+gruposcasasN<-cutree(casasclustN,k=4)
+
+plot(data$crim,data$black,col=gruposcasas)
+plot(datosN$crim,data$black,col=gruposcasasN)
+
+gruposcasas2<-cutree(casasclust,h=200) # Argumento h para filtrar la distancia
+gruposcasas2N<-cutree(casasclustN,h=4) # h=4, son normalizados
+plot(data$crim,data$black,col=gruposcasas2)
+plot(data$crim,data$black,col=gruposcasas2N)
+
+# Como hacerlo de manera correcta - Yisel
+
+datos2<-subset(data, select = c(crim, black, medv)) # subset para traer mejor los datos ??ESTUDIARLO!
+datos2N<-scale(datos2, scale = T, center = F)
+dist2<-dist(datos2N)
+clust2<-hclust(dist2)
+plot(clust2)
+
+grupos2<-cutree(clust2, k=3) # K numero de cluster
+plot(datos2$crim, datos2$black, main="Criminalidad vs Negros", col=grupos2)
+
+grupos3<-cutree(clust2,h=2) # h regula distancias hasta 2
+plot(datos2$crim, datos2$black, main="Criminalidad vs Negros", col=grupos3)
+plot(datos2$crim, datos2$medv, main="Criminalidad vs Negros", col=grupos2)
+
+datoscong3<-cbind(data,grupos3)
+subset(datoscong3,grupos3==1)
+
+c1<-subset(datoscong3,grupos3==1)
+c2<-suvset(c1,medv>20)
+
+d1<-subset(datoscong3,crim>8)
+d2<-subset(datoscong3,crim<12)
+
+#regresion<-lm(data$medv~data$black+data$crim)
+#f3<-function(x,y) 0.95202+0.02176*x^3-0.32627*y^2
+#persp3d(f3)
+#curve_3d(f3)
+
+
+
+
+
