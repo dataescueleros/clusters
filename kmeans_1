@@ -1,0 +1,51 @@
+datoskm<- read.csv("~/R files/Freceuncia y severidad.csv",header = FALSE, sep = ";",dec = ".",stringsAsFactors = F)
+library(stats)
+
+severidad<-datoskm[,2]
+hist(severidad)
+clusters<-kmeans(severidad,5)
+clusters
+
+frecuencia<-datoskm[,3]
+frecnorm<-(frecuencia-mean(frecuencia))/(max(frecuencia)-min(frecuencia))
+hist(frecuencia)
+clusters<-kmeans(severidad,5)
+clusters
+
+ordcluster<-sort(clusters$centers,decreasing = FALSE)
+ordcluster
+library(broom)
+tidy(ordcluster)
+
+fechas<-as.Date.factor(datoskm[,1],format="%d/%m/%Y")
+meses<-months.Date(fechas)
+datoskm[,4]<-meses
+mesnum<-(meses=="agosto")*8+(meses=="septiembre")*9+(meses=="octubre")*10+(meses=="noviembre")*11+(meses=="diciembre")*12+(meses=="enero")*1+(meses=="febrero")*2+(meses=="marzo")*3+(meses=="abril")*4+(meses=="mayo")*5+(meses=="junio")*6+(meses=="julio")*7
+datoskm[,5]<-mesnum
+hist(mesnum)
+
+
+plot(mesnum,severidad)
+plot(mesnum,frecuencia)
+tapply(severidad,mesnum,sum)
+colnames(datoskm)<-c("Fechas","Severidad","Frecuencia","Nombre_Mes","Mes")
+
+datosenero<-subset(datoskm,datoskm$Mes==1)
+sum(datosenero$Severidad)
+
+datos1<-subset(datoskm, select = c(Severidad,Frecuencia))
+
+rangos<-sapply(datos1,range)
+maxMin<-rangos[2,]-rangos[1,]
+datos1norm<-scale(datos1,rangos[1,], ifelse(maxMin>0, maxMin, 1))
+kmeans2<-kmeans(datos1,3)
+
+datoskm[,6]<-kmeans2$cluster
+
+library(ggplot2)
+datoskm
+Etiquetas<-datoskm$Nombre_Mes
+ggplot(datoskm,aes(x=Mes,y=Severidad),color = datoskm$V6)+geom_point(colour = datoskm$V6)+scale_x_discrete("Mes",labels = Etiquetas)
+ggsave("scatterplotsec.eps")
+ggplot(datoskm,aes(x=Mes,y=frecuencia),color = datoskm$V6)+geom_point(colour = datoskm$V6)
+ggsave("scatterplotfrec.eps")
