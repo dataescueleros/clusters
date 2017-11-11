@@ -1,0 +1,23 @@
+library("readxl")
+setwd("~/Octavo Semestre/Semillero MA2")
+grados <- read_excel("degrees-that-pay-back2.xlsx")
+summary(grados)
+#install.packages("ggplot2")
+library("ggplot2")
+
+grados2<- subset(grados,select = c("b1","b2"))
+#grados2 <- as.numeric(nombres)
+ggplot(data= grados2, aes(x=b1,y=b2))+geom_point()+stat_smooth(method = "lm", formula = y~x)
+
+maxx<- apply(grados2,2,max)
+minn <- apply(grados2,2,min)
+nomgrados<-scale(grados2,center = minn, scale = maxx-minn)
+
+clusters <- hclust(dist(nomgrados))
+plot(clusters)
+grupos<-cutree(clusters,k=3)
+gruposcluster <- cbind(grados[,1],grados2,grupos)
+
+gruposcluster %>% ggvis(~b1, ~b2, fill = ~grupos) %>% layer_points()
+ggplot(data = gruposcluster, aes(x=b1,y=b2))+geom_point(size=3,color=grupos)
+gruposcluster[gruposcluster$grupos==1,]
